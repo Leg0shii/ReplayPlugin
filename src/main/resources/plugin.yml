@@ -1,0 +1,10 @@
+name: UtilsPlugin
+version: '${project.version}'
+main: de.legoshi.replaymod.Main
+
+commands:
+  rp:
+  rpgui:
+  rpsave:
+
+depend: [ProtocolLib]

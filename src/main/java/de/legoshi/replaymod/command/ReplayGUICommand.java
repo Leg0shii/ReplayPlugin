@@ -20,13 +20,13 @@ public class ReplayGUICommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
 
+        Player player = (Player) commandSender;
+        if (!player.hasPermission("replay")) return false;
+
         if (strings.length != 1) {
             commandNoName(((Player) commandSender).getPlayer());
             return false;
         }
-
-        Player player = (Player) commandSender;
-        if (!player.hasPermission("replay")) return false;
 
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
             ReplayGUIPlayer replayGUIPlayer = new ReplayGUIPlayer(mySQL);

@@ -62,6 +62,8 @@ public class CheatDetection {
                     if (blockToCheck.getType().toString().contains("STAIR")) return false;
                     if (blockToCheck.getType() == Material.LADDER) return false;
                     if (blockToCheck.getType() == Material.VINE) return false;
+                    if (blockToCheck.getType() == Material.PISTON_BASE) return false;
+                    if (blockToCheck.getType() == Material.ANVIL) return false;
                 }
             }
         }

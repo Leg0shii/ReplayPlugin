@@ -76,23 +76,16 @@ public class FakePlayer extends Reflections {
     }
 
     public void teleport(Player player, PlayerMoveTick playerMoveTick) {
-        int moveX = getFixLocation(this.playerMoveTick.getX());
-        int moveY = getFixLocation(this.playerMoveTick.getY());
-        int moveZ = getFixLocation(this.playerMoveTick.getZ());
-        float yaw = playerMoveTick.getYaw();
-        float pitch  = playerMoveTick.getPitch();
-
-        PacketPlayOutEntityTeleport packet = new PacketPlayOutEntityTeleport(npc);
-        npc.setLocation(
-                moveX,
-                moveY,
-                moveZ,
-                getFixRotation(yaw),
-                getFixRotation(pitch)
-        );
+        PacketPlayOutEntityTeleport packet = new PacketPlayOutEntityTeleport();
+        setValue(packet, "a", this.entityID);
+        setValue(packet, "b", this.playerMoveTick.getX());
+        setValue(packet, "c", this.playerMoveTick.getY());
+        setValue(packet, "d", this.playerMoveTick.getZ());
+        setValue(packet, "e", getFixRotation(playerMoveTick.getYaw()));
+        setValue(packet, "f", getFixRotation(playerMoveTick.getPitch()));
 
         sendPacket(packet, player);
-        headRotation(yaw, pitch, player);
+        headRotation(playerMoveTick.getYaw(), playerMoveTick.getPitch(), player);
         this.prevMoveX = playerMoveTick.getX();
         this.prevMoveY = playerMoveTick.getY();
         this.prevMoveZ = playerMoveTick.getZ();
@@ -110,13 +103,13 @@ public class FakePlayer extends Reflections {
         else packet = new PacketPlayOutEntityEquipment(entityID, EnumItemSlot.HEAD, CraftItemStack.asNMSCopy(new ItemStack(Material.AIR)));
         sendPacket(packet, player);
     }
-
+    
     public void headRotation(float yaw, float pitch, Player player) {
         PacketPlayOutEntity.PacketPlayOutEntityLook packet = new PacketPlayOutEntity.PacketPlayOutEntityLook(entityID, getFixRotation(yaw), getFixRotation(pitch), true);
         PacketPlayOutEntityHeadRotation packetHead = new PacketPlayOutEntityHeadRotation();
         setValue(packetHead, "a", entityID);
         setValue(packetHead, "b", getFixRotation(yaw));
-
+        
         sendPacket(packet, player);
         sendPacket(packetHead, player);
     }

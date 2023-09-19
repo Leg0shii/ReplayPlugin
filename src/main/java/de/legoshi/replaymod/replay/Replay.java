@@ -23,7 +23,7 @@ public class Replay {
     private final AsyncMySQL mySQL;
 
     public void playReplay(Player player, int clipID) {
-        ResultSet resultSet = mySQL.query("SELECT * FROM playerclip WHERE clipid = '" + clipID + "';");
+        ResultSet resultSet = mySQL.query("SELECT * FROM playerclip WHERE clipid = " + clipID + ";");
         ArrayList<PlayerMoveTick> playerMoveTickArrayList = new ArrayList<>();
         String worldName;
         String playerName;

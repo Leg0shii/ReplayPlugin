@@ -20,21 +20,22 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.UUID;
 
-@RequiredArgsConstructor
 public class ReplayGUIPlayer {
 
     private final AsyncMySQL mySQL;
     private final int pageVolume = 40;
-
-    private String[] guiSetup = {
+    private final String[] guiSetup = {
             "ggggggggk",
             "ggggggggh",
             "ggggggggh",
             "ggggggggh",
             "ggggggggf"
     };
+    
+    public ReplayGUIPlayer(AsyncMySQL mySQL) {
+        this.mySQL = mySQL;
+    }
 
-    // search = playeruuid
     public void guiOpen(Player player, String playerID, boolean saved, int page) {
         InventoryGui gui = new InventoryGui(Main.getInstance(), player, "Replays", guiSetup);
 
@@ -48,17 +49,16 @@ public class ReplayGUIPlayer {
 
         player.closeInventory();
 
-        String extraQuery = "";
+        String extraQuery;
         if (!playerID.equals("")) {
-            extraQuery = "userid = '" + playerID;
+            extraQuery = "userid = '" + playerID + "'";
         } else {
             extraQuery = "saved = " + saved;
         }
 
         ResultSet resultSet = mySQL.query("SELECT clipid, userid, date, reviewed, saved " +
-                "FROM playerclip WHERE " + extraQuery +
-                " ORDER BY date DESC LIMIT " + (pageVolume * (page - 1)) + ", 40;");
-
+                "FROM playerclip WHERE " + extraQuery + " ORDER BY date DESC LIMIT " + (pageVolume * (page - 1)) + ", 40;");
+    
         try {
             if (resultSet != null && resultSet.next()) {
                 resultSet.last();
@@ -66,7 +66,9 @@ public class ReplayGUIPlayer {
                 gui.addElement(downElement(playerID, saved, resultSet.getRow(),  page+1));
 
                 resultSet.beforeFirst();
-                while (resultSet.next()) group.addElement(mapElements(resultSet));
+                while (resultSet.next()) {
+                    group.addElement(mapElements(resultSet));
+                }
 
                 gui.addElement(group);
                 gui.show(player);
@@ -90,7 +92,7 @@ public class ReplayGUIPlayer {
 
         String viewed = resultSet.getBoolean("reviewed") ? "&aYes" : "&cNo";
         String saved = resultSet.getBoolean("saved") ? "&aYes" : "&cNo";
-
+    
         StaticGuiElement staticGuiElement;
         staticGuiElement = new StaticGuiElement('g', playerHead, click -> {
             Player player = (Player) click.getWhoClicked();

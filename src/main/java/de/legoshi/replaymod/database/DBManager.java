@@ -25,7 +25,7 @@ public class DBManager {
 
     public AsyncMySQL connectToDB() {
         Main instance = Main.getInstance();
-        FileWriter config = new FileWriter("./plugins/ReplayConfiguration/", "replaydbconfig.yaml");
+        FileWriter config = new FileWriter("./plugins/TD2Core/", "td2_db.yml");
 
         String host = config.getString("host");
         int port = config.getInt("port");
@@ -58,7 +58,7 @@ public class DBManager {
         long time = System.currentTimeMillis();
 
         mySQL.update("INSERT INTO playerclip (userid, world, date, clip, reviewed, saved) VALUES " +
-                "('" + uuid + "', '" + world + "', " + time + "', '" + values + "', " + false + ", " + false + ");");
+                "('" + uuid + "', '" + world + "', " + time + ", '" + values + "', " + false + ", " + false + ");");
     }
 
 }

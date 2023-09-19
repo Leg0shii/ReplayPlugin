@@ -51,7 +51,7 @@ public class ReplayGUICommand implements CommandExecutor {
             ReplayGUIPlayer replayGUIPlayer = new ReplayGUIPlayer(mySQL);
             OfflinePlayer op = Bukkit.getOfflinePlayer(playerName);
             String uuid = op.getUniqueId().toString();
-            replayGUIPlayer.guiOpen(player, uuid, true, 1);
+            replayGUIPlayer.guiOpen(player, uuid, false, 1);
         });
     }
 

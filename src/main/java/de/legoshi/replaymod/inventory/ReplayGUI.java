@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ReplayGUI {
 
-    private String[] guiSetup = {
+    private final String[] guiSetup = {
             "         ",
             "  a   b  ",
             "         ",

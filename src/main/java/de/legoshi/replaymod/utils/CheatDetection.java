@@ -5,10 +5,7 @@ import de.legoshi.replaymod.PlayerManager;
 import de.legoshi.replaymod.PlayerObject;
 import de.legoshi.replaymod.database.DBManager;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -19,7 +16,12 @@ public class CheatDetection {
     private final DBManager dbManager;
 
     public void checkPlayerMovement(Player player) {
-        if (player.hasPermission("replay.ignore") || player.isOp()) return;
+        if (player.hasPermission("replay.ignore")
+            || player.isOp()
+            || player.getGameMode().equals(GameMode.CREATIVE)
+            || player.getGameMode().equals(GameMode.SPECTATOR)
+            || player.hasPermission("essentials.fly")
+        ) return;
 
         PlayerObject playerObject = playerManager.playerHashMap.get(player);
         double currentYVel = Math.round(playerObject.getCurrentYVel() * 100.0) / 100.0;
@@ -62,6 +64,8 @@ public class CheatDetection {
                     if (blockToCheck.getType().toString().contains("STAIR")) return false;
                     if (blockToCheck.getType() == Material.LADDER) return false;
                     if (blockToCheck.getType() == Material.VINE) return false;
+                    if (blockToCheck.getType() == Material.PISTON_BASE) return false;
+                    if (blockToCheck.getType() == Material.ANVIL) return false;
                 }
             }
         }

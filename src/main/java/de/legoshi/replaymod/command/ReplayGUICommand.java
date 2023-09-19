@@ -20,7 +20,6 @@ public class ReplayGUICommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
 
-        //
         Player player = (Player) commandSender;
         if (!player.hasPermission("replay")) return false;
 

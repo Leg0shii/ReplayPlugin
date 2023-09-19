@@ -3,7 +3,6 @@ package de.legoshi.replaymod;
 import de.legoshi.replaymod.utils.PlayerMoveTick;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -28,8 +27,7 @@ public class PlayerObject {
     }
 
     public void addPlayerMoveTick(PlayerMoveTick playerMoveTick) {
-        int maxRec = Math.max(Main.getInstance().joinRecTime, Main.getInstance().leaveRecTime);
-        int recTime = (20*maxRec) - 1;
+        int recTime = 200;
         if (lastPlayerPositions.size() > recTime) {
             lastPlayerPositions.remove(recTime);
         }

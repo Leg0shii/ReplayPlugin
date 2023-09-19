@@ -35,7 +35,7 @@ public class ReplayGUIPlayer {
     };
 
     // search = playeruuid
-    public void guiOpen(Player player, String playerID, boolean all, boolean viewed, boolean saved, String type, int page) {
+    public void guiOpen(Player player, String playerID, boolean saved, int page) {
         InventoryGui gui = new InventoryGui(Main.getInstance(), player, "Replays", guiSetup);
 
         GuiElementGroup group = new GuiElementGroup('g');
@@ -48,20 +48,22 @@ public class ReplayGUIPlayer {
 
         player.closeInventory();
 
-        String playerSearchString = "";
-        String addString = "";
-        if (!playerID.equals("")) playerSearchString = "playerUUID = '" + playerID + "' AND ";
-        if (!all) addString = "AND reviewed = " + viewed + " AND saved = " + saved + " ";
+        String extraQuery = "";
+        if (!playerID.equals("")) {
+            extraQuery = "userid = '" + playerID;
+        } else {
+            extraQuery = "saved = " + saved;
+        }
 
-        ResultSet resultSet = mySQL.query("SELECT clipid, playerUUID, date, reviewed, saved, publicclip " +
-                    "FROM playerclip WHERE " + playerSearchString + "playerjoin = " + type + " " + addString + "AND publicclip = true " +
-                    "ORDER BY date DESC LIMIT " + (pageVolume * (page - 1)) + ", 40;");
+        ResultSet resultSet = mySQL.query("SELECT clipid, userid, date, reviewed, saved " +
+                "FROM playerclip WHERE " + extraQuery +
+                " ORDER BY date DESC LIMIT " + (pageVolume * (page - 1)) + ", 40;");
 
         try {
             if (resultSet != null && resultSet.next()) {
                 resultSet.last();
-                gui.addElement(upElement(playerID, all, viewed, saved, type, page-1));
-                gui.addElement(downElement(playerID, all, viewed, saved, type, resultSet.getRow(),  page+1));
+                gui.addElement(upElement(playerID, saved, page-1));
+                gui.addElement(downElement(playerID, saved, resultSet.getRow(),  page+1));
 
                 resultSet.beforeFirst();
                 while (resultSet.next()) group.addElement(mapElements(resultSet));
@@ -80,7 +82,7 @@ public class ReplayGUIPlayer {
     public StaticGuiElement mapElements(ResultSet resultSet) throws SQLException {
         long time = resultSet.getLong("date");
         int id = resultSet.getInt("clipid");
-        String uuid = resultSet.getString("playerUUID");
+        String uuid = resultSet.getString("userid");
         Date currentDate = new Date(time);
 
         String playerName = Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName();
@@ -91,8 +93,8 @@ public class ReplayGUIPlayer {
 
         StaticGuiElement staticGuiElement;
         staticGuiElement = new StaticGuiElement('g', playerHead, click -> {
-            Player player = (Player) click.getEvent().getWhoClicked();
-            if (click.getEvent().isLeftClick()) {
+            Player player = (Player) click.getWhoClicked();
+            if (click.getType().isLeftClick()) {
                 Main.getInstance().replay.playReplay(player, id);
                 mySQL.update("UPDATE playerclip SET reviewed = true WHERE clipid = " + id + ";");
                 player.closeInventory();
@@ -112,12 +114,12 @@ public class ReplayGUIPlayer {
         return staticGuiElement;
     }
 
-    private StaticGuiElement downElement(String search, boolean all, boolean viewed, boolean saved, String type, int size, int page) {
+    private StaticGuiElement downElement(String search, boolean saved, int size, int page) {
         StaticGuiElement staticGuiElement;
         staticGuiElement = new StaticGuiElement('f', new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 2), click -> {
             if (size == pageVolume) {
-                Player player = (Player) click.getEvent().getWhoClicked();
-                guiOpen(player, search, all, viewed, saved, type, page);
+                Player player = (Player) click.getWhoClicked();
+                guiOpen(player, search, saved, page);
             }
 
             return true;
@@ -125,17 +127,16 @@ public class ReplayGUIPlayer {
         return staticGuiElement;
     }
 
-    private StaticGuiElement upElement(String search, boolean all, boolean viewed, boolean saved, String type, int page) {
+    private StaticGuiElement upElement(String search, boolean saved, int page) {
         StaticGuiElement staticGuiElement;
         staticGuiElement = new StaticGuiElement('k', new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 2),
                 click -> {
-                    Player player = (Player) click.getEvent().getWhoClicked();
-                    if (page > 0) guiOpen(player, search, all, viewed, saved, type, page);
-
+                    Player player = (Player) click.getWhoClicked();
+                    if (page > 0) {
+                        guiOpen(player, search, saved, page);
+                    }
                     return true;
-                }
-                , "UP");
-
+                }, "UP");
         return staticGuiElement;
     }
 

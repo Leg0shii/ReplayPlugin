@@ -24,54 +24,28 @@ public class Replay {
 
     public void playReplay(Player player, int clipID) {
         ResultSet resultSet = mySQL.query("SELECT * FROM playerclip WHERE clipid = '" + clipID + "';");
-        long time;
-
         ArrayList<PlayerMoveTick> playerMoveTickArrayList = new ArrayList<>();
         String worldName;
         String playerName;
 
         final int[] startSize = {0};
         int endSize;
+
         try {
             if (resultSet.next()) {
                 Blob blob = resultSet.getBlob("clip");
                 String s = new String(blob.getBytes(1L, (int) blob.length()));
                 String[] args = s.split(":");
                 worldName = resultSet.getString("world");
-                String playerUUID = resultSet.getString("playerUUID");
+                String playerUUID = resultSet.getString("userid");
                 playerName = Bukkit.getOfflinePlayer(UUID.fromString(playerUUID)).getName();
-                long date = resultSet.getLong("date");
 
                 for (String moveString : args) {
                     PlayerMoveTick playerMoveTick = new PlayerMoveTick(moveString);
                     playerMoveTickArrayList.add(playerMoveTick);
                 }
+
                 endSize = playerMoveTickArrayList.size();
-
-                if (!resultSet.getString("playerjoin").equals("2")) {
-                    ResultSet resultSetLeaveClip = mySQL.query(
-                            "SELECT * " +
-                                    "FROM playerclip " +
-                                    "WHERE date < " + date + " AND playerUUID = '" + playerUUID + "' AND playerjoin = 0 " +
-                                    "ORDER BY date DESC LIMIT 1;");
-                    try {
-                        if (resultSetLeaveClip.next()) {
-                            Blob blobL = resultSetLeaveClip.getBlob("clip");
-                            String sL = new String(blobL.getBytes(1L, (int) blobL.length()));
-                            String[] argsL = sL.split(":");
-                            for (String moveString : argsL) {
-                                PlayerMoveTick playerMoveTick = new PlayerMoveTick(moveString);
-                                playerMoveTickArrayList.add(playerMoveTick);
-                            }
-                            startSize[0] = endSize - playerMoveTickArrayList.size();
-                        }
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                        player.sendMessage(ChatHelper.PREFIX_ERR + "Something went wrong while trying to load the replay...");
-                        return;
-                    }
-                }
-
             } else {
                 player.sendMessage(ChatHelper.PREFIX_ERR + "Something went wrong while trying to load the replay...");
                 return;

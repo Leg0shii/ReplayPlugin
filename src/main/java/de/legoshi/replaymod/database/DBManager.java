@@ -15,8 +15,8 @@ public class DBManager {
         this.mySQL = connectToDB();
         if(mySQL != null) {
             Bukkit.getConsoleSender().sendMessage("DB connected.");
-            mySQL.update("CREATE TABLE IF NOT EXISTS playerclip (clipid INT NOT NULL AUTO_INCREMENT, playerUUID VARCHAR(255), world VARCHAR(255), playerjoin BOOL, reviewed BOOL, saved BOOL, publicclip BOOL, date BigInt, clip BLOB, PRIMARY KEY(clipid));");
-            Main.running = true;
+            mySQL.update("CREATE TABLE IF NOT EXISTS playerclip (clipid INT NOT NULL AUTO_INCREMENT, userid VARCHAR(255), world VARCHAR(255), reviewed BOOL, saved BOOL, date BigInt, clip BLOB, PRIMARY KEY(clipid));");
+            Main.setRunning();
         } else {
             Bukkit.getConsoleSender().sendMessage("DB couldn't be connected.");
         }
@@ -44,22 +44,21 @@ public class DBManager {
     /**
      * Saves the clip to the database
      * @param playerObject
-     * @param args 0: onQuit, 1: onJoin, 2: onIllegalMove
      */
-    public void saveCurrentClip(PlayerObject playerObject, String args) {
-        String values = "";
-        String[] arg = args.split(";");
-        boolean publicUpload = false;
-        if (arg.length == 2 && arg[1].equals("true")) publicUpload = true;
+    public void saveCurrentClip(PlayerObject playerObject) {
+        StringBuilder values = new StringBuilder();
         for (PlayerMoveTick playerMoveTick : playerObject.getLastPlayerPositions()) {
             String moveString = playerMoveTick.toString();
-            if (values.equals("")) values = moveString;
-            else values = values + ":" + moveString;
+            if (values.toString().equals("")) values = new StringBuilder(moveString);
+            else values.append(":").append(moveString);
         }
+
+        String world = playerObject.getPlayer().getWorld().getName();
         String uuid = playerObject.getPlayer().getUniqueId().toString();
         long time = System.currentTimeMillis();
-        mySQL.update("INSERT INTO playerclip (playerUUID, world, playerjoin, date, clip, reviewed, saved, publicclip) " +
-                "VALUES ('" + uuid + "', '" + playerObject.getPlayer().getWorld().getName() + "', " + arg[0] + ", '" + time + "', '" + values + "', " + false + ", " + false + ", " + publicUpload + ");");
+
+        mySQL.update("INSERT INTO playerclip (userid, world, date, clip, reviewed, saved) VALUES " +
+                "('" + uuid + "', '" + world + "', " + time + "', '" + values + "', " + false + ", " + false + ");");
     }
 
 }

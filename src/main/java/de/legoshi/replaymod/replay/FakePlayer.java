@@ -1,24 +1,19 @@
 package de.legoshi.replaymod.replay;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import de.legoshi.replaymod.utils.ChatHelper;
 import de.legoshi.replaymod.utils.HTTPHelper;
 import de.legoshi.replaymod.utils.PlayerMoveTick;
 import lombok.Getter;
-import net.minecraft.server.v1_8_R3.*;
+import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.craftbukkit.v1_8_R3.CraftServer;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_12_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -28,11 +23,10 @@ public class FakePlayer extends Reflections {
 
     public String name;
 
-    private int entityID;
-    private GameProfile gameProfile;
+    @Getter private final EntityPlayer npc;
+    private final int entityID;
+    private final GameProfile gameProfile;
     private PlayerMoveTick playerMoveTick;
-    @Getter
-    private EntityPlayer npc;
 
     public String prevWorld;
     public double prevMoveX;
@@ -76,8 +70,8 @@ public class FakePlayer extends Reflections {
     }
 
     public void move(Player player, PlayerMoveTick playerMoveTick) {
-        teleport(player, playerMoveTick);
         sneak(player, playerMoveTick);
+        teleport(player, playerMoveTick);
         prac(player, playerMoveTick);
     }
 
@@ -87,14 +81,16 @@ public class FakePlayer extends Reflections {
         int moveZ = getFixLocation(this.playerMoveTick.getZ());
         float yaw = playerMoveTick.getYaw();
         float pitch  = playerMoveTick.getPitch();
-        PacketPlayOutEntityTeleport packet = new PacketPlayOutEntityTeleport(
-                entityID,
+
+        PacketPlayOutEntityTeleport packet = new PacketPlayOutEntityTeleport(npc);
+        npc.setLocation(
                 moveX,
                 moveY,
                 moveZ,
                 getFixRotation(yaw),
-                getFixRotation(pitch),
-                playerMoveTick.isOnGround());
+                getFixRotation(pitch)
+        );
+
         sendPacket(packet, player);
         headRotation(yaw, pitch, player);
         this.prevMoveX = playerMoveTick.getX();
@@ -105,16 +101,13 @@ public class FakePlayer extends Reflections {
     }
 
     public void sneak(Player player, PlayerMoveTick playerMoveTick) {
-        DataWatcher rawDataWatcher = npc.getDataWatcher();
-        rawDataWatcher.watch(0, playerMoveTick.isSneak() ? (byte) 2 : (byte) 0);
-        PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(entityID, rawDataWatcher, false);
-        sendPacket(metadataPacket, player);
+        npc.setSneaking(playerMoveTick.isSneak());
     }
 
     public void prac(Player player, PlayerMoveTick playerMoveTick) {
         PacketPlayOutEntityEquipment packet;
-        if (playerMoveTick.isPrac()) packet = new PacketPlayOutEntityEquipment(entityID, (short) 4, CraftItemStack.asNMSCopy(new ItemStack(Material.DIAMOND_HELMET)));
-        else  packet = new PacketPlayOutEntityEquipment(entityID, (short) 4, CraftItemStack.asNMSCopy(new ItemStack(Material.AIR)));
+        if (playerMoveTick.isPrac()) packet = new PacketPlayOutEntityEquipment(entityID, EnumItemSlot.HEAD, CraftItemStack.asNMSCopy(new ItemStack(Material.DIAMOND_HELMET)));
+        else packet = new PacketPlayOutEntityEquipment(entityID, EnumItemSlot.HEAD, CraftItemStack.asNMSCopy(new ItemStack(Material.AIR)));
         sendPacket(packet, player);
     }
 
@@ -138,8 +131,8 @@ public class FakePlayer extends Reflections {
         return MathHelper.floor(pos * 32.0D);
     }
 
-    public byte getFixRotation(float yawpitch) {
-        return (byte) ((int) (yawpitch * 256.0F / 360.0F));
+    public byte getFixRotation(float yawPitch) {
+        return (byte) ((int) (yawPitch * 256.0F / 360.0F));
     }
 
 }

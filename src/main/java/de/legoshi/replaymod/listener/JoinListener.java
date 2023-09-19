@@ -18,7 +18,9 @@ public class JoinListener implements Listener {
     @EventHandler
     private void onJoinEvent(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (Main.running) playerManager.playerJoin(player);
+        if (Main.isRunning()) {
+            playerManager.playerJoin(player);
+        }
     }
 
 }

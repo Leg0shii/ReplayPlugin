@@ -44,11 +44,11 @@ public class ReplayItemGUI {
         }, "&c&lDelete Replay");
 
         StaticGuiElement deleteAllRP = new StaticGuiElement('c', deleteAllReplay, click -> {
-            ResultSet resultSet = Main.getInstance().mySQL.query("SELECT playerUUID FROM playerclip WHERE clipid = " + clipID + ";");
+            ResultSet resultSet = Main.getInstance().mySQL.query("SELECT userid FROM playerclip WHERE clipid = " + clipID + ";");
             try {
                 if (resultSet.next()) {
-                    String playerUUID = resultSet.getString("playerUUID");
-                    Main.getInstance().mySQL.update("DELETE FROM playerclip WHERE playerUUID = '" + playerUUID + "' AND saved=0;");
+                    String playerUUID = resultSet.getString("userid");
+                    Main.getInstance().mySQL.update("DELETE FROM playerclip WHERE userid = '" + playerUUID + "';");
                     player.closeInventory();
                     player.sendMessage(ChatHelper.PREFIX_SUCC + "Successfully deleted all replay clips from player.");
                 } else player.sendMessage(ChatHelper.PREFIX_ERR + "No entry found...");
@@ -65,13 +65,13 @@ public class ReplayItemGUI {
     }
 
     private int getQuitClip(Player player, int clipID) {
-        ResultSet resultSet = Main.getInstance().mySQL.query("SELECT date, playerUUID FROM playerclip WHERE clipid = " + clipID + ";");
+        ResultSet resultSet = Main.getInstance().mySQL.query("SELECT date, userid FROM playerclip WHERE clipid = " + clipID + ";");
         long date;
         String playerUUID;
         try {
             if (resultSet.next()) {
                 date = resultSet.getLong("date");
-                playerUUID = resultSet.getString("playerUUID");
+                playerUUID = resultSet.getString("userid");
             } else {
                 player.sendMessage(ChatHelper.PREFIX_ERR + "No entry found...");
                 return -1;
@@ -82,7 +82,7 @@ public class ReplayItemGUI {
             return -1;
         }
 
-        ResultSet resultSetLeaveClip = Main.getInstance().mySQL.query("SELECT * FROM playerclip WHERE date < " + date + " AND playerUUID = '" + playerUUID + "' AND playerjoin = 0 ORDER BY date DESC LIMIT 1;");
+        ResultSet resultSetLeaveClip = Main.getInstance().mySQL.query("SELECT * FROM playerclip WHERE date < " + date + " AND userid = '" + playerUUID + "' ORDER BY date DESC LIMIT 1;");
         int quitClipID;
         try {
             if (resultSetLeaveClip.next()) {

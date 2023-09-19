@@ -46,9 +46,9 @@ public class CheatDetection {
     public void startRecordingTimer(PlayerObject playerObject) {
         playerObject.setFlyRecording(true);
         Bukkit.getScheduler().runTaskLaterAsynchronously(Main.getInstance(), () -> {
-            dbManager.saveCurrentClip(playerObject, "2;true");
+            dbManager.saveCurrentClip(playerObject);
             playerObject.setFlyRecording(false);
-        }, 20L*Main.getInstance().joinRecTime-3);
+        }, 20L * 10);
     }
 
     private boolean validateFly(Player player) {
@@ -65,9 +65,7 @@ public class CheatDetection {
                 }
             }
         }
-        if (Math.round(location.getY()) == location.getY() || Math.floor(location.getY())+0.5 == location.getY()) return false;
-
-        return true;
+        return Math.round(location.getY()) != location.getY() && Math.floor(location.getY()) + 0.5 != location.getY();
     }
 
 }

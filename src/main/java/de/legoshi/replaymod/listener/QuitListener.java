@@ -18,14 +18,18 @@ public class QuitListener implements Listener {
 
     @EventHandler
     private void onQuitEvent(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        if (Main.running) playerManager.playerQuit(player);
+        playerQuit(event.getPlayer());
     }
 
     @EventHandler
     private void onKickEvent(PlayerKickEvent event) {
-        Player player = event.getPlayer();
-        if (Main.running) playerManager.playerQuit(player);
+        playerQuit(event.getPlayer());
+    }
+
+    private void playerQuit(Player player) {
+        if (Main.isRunning()) {
+            playerManager.playerQuit(player);
+        }
     }
 
 }

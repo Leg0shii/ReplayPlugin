@@ -19,30 +19,39 @@ public class ReplayGUICommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-
-        //
-        Player player = (Player) commandSender;
-        if (!player.hasPermission("replay")) return false;
-
-        if (strings.length != 1) {
-            commandNoName(((Player) commandSender).getPlayer());
+        if (!(commandSender instanceof Player)) {
+            commandSender.sendMessage("Not a player.");
             return false;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
-            ReplayGUIPlayer replayGUIPlayer = new ReplayGUIPlayer(mySQL);
-            OfflinePlayer op = Bukkit.getOfflinePlayer(strings[0]);
-            String uuid = op.getUniqueId().toString();
-            replayGUIPlayer.guiOpen(player, uuid, true, false, false, "1", 1);
-        });
+        Player player = (Player) commandSender;
+        if (!player.hasPermission("replay")) {
+            player.sendMessage("§cNo permissions.");
+            return false;
+        }
 
+        if (strings.length != 1) {
+            openGlobalGUI(player);
+            return false;
+        }
+
+        openPlayerGUI(player, strings[0]);
         return false;
     }
 
-    private void commandNoName(Player player) {
+    private void openGlobalGUI(Player player) {
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
             ReplayGUI replayGUI = new ReplayGUI();
             replayGUI.guiOpen(player);
+        });
+    }
+
+    private void openPlayerGUI(Player player, String playerName) {
+        Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
+            ReplayGUIPlayer replayGUIPlayer = new ReplayGUIPlayer(mySQL);
+            OfflinePlayer op = Bukkit.getOfflinePlayer(playerName);
+            String uuid = op.getUniqueId().toString();
+            replayGUIPlayer.guiOpen(player, uuid, true, 1);
         });
     }
 

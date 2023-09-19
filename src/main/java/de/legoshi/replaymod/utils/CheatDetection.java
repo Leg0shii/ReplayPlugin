@@ -19,7 +19,7 @@ public class CheatDetection {
     private final DBManager dbManager;
 
     public void checkPlayerMovement(Player player) {
-        if (player.hasPermission("replay.ignore") || player.isOp()) return;
+        if (player.hasPermission("replay.ignore") || player.hasPermission("replay.bypass") || player.isOp()) return;
 
         PlayerObject playerObject = playerManager.playerHashMap.get(player);
         double currentYVel = Math.round(playerObject.getCurrentYVel() * 100.0) / 100.0;

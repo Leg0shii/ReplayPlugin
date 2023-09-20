@@ -6,6 +6,7 @@ import de.legoshi.replaymod.utils.PlayerMoveTick;
 import org.bukkit.Bukkit;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class DBManager {
 
@@ -47,7 +48,7 @@ public class DBManager {
      */
     public void saveCurrentClip(PlayerObject playerObject) {
         StringBuilder values = new StringBuilder();
-        for (PlayerMoveTick playerMoveTick : playerObject.getLastPlayerPositions()) {
+        for (PlayerMoveTick playerMoveTick : new ArrayList<>(playerObject.getLastPlayerPositions())) {
             String moveString = playerMoveTick.toString();
             if (values.toString().equals("")) values = new StringBuilder(moveString);
             else values.append(":").append(moveString);

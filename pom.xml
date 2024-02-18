@@ -48,7 +48,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3.1</version>
                 <configuration>
-                    <outputDirectory>C:\Users\supid\Desktop\Coding\10 Minecraft\Plugins\ReplayMod\server\plugins</outputDirectory>
+                    <outputDirectory>${basedir}/server/plugins</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>

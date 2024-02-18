@@ -7,7 +7,11 @@ import de.legoshi.replaymod.database.DBManager;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class CheatDetection {
@@ -23,27 +27,88 @@ public class CheatDetection {
             || player.hasPermission("essentials.fly")
         ) return;
 
+
         PlayerObject playerObject = playerManager.playerHashMap.get(player);
+        addFlyingCount(playerObject);
+        checkLadderExploit(player, playerObject);
+
+        if (playerObject.getYVelCount() > 2 && !playerObject.isFlyRecording()) {
+            playerObject.setYVelCount(0);
+            if (!validateFly(player)) return;
+            recordExploit(player, playerObject, "is flagged for flying");
+        }
+
+
+        if(playerObject.getLadderCount() > 2 && !playerObject.isFlyRecording()) {
+            playerObject.setLadderCount(0);
+            playerObject.setYVelCount(0);
+            recordExploit(player, playerObject, "abused the forge ladder hitbox exploit");
+        }
+    }
+
+    private void recordExploit(Player player, PlayerObject playerObject, String message) {
+        for(Player all : Bukkit.getOnlinePlayers()) {
+            if (all.hasPermission("replay") || all.isOp()) {
+                all.sendMessage("§6" + player.getDisplayName() + " §c" + message + " at §6("
+                        + Math.round(player.getLocation().getX()) + ", "
+                        + Math.round(player.getLocation().getY()) + ", "
+                        + Math.round(player.getLocation().getZ()) + ") §c in §6 " + player.getLocation().getWorld().getName()
+                );
+            }
+        }
+        startRecordingTimer(playerObject);
+    }
+
+    private void checkLadderExploit(Player player, PlayerObject playerObject) {
+        if(playerObject.isFlyRecording()) {
+            return;
+        }
+
+        if(player.isOnGround()) {
+            return;
+        }
+
+        Block block = player.getLocation().getBlock();
+        Block blockAbove = block.getRelative(BlockFace.UP);
+
+        if(block.getType().equals(Material.AIR) && (blockAbove.getType().equals(Material.LADDER) || blockAbove.getType().equals(Material.VINE))) {
+                if(Double.compare(playerObject.getPrevY(), playerObject.getCurrentY()) == 0 || Double.compare(playerObject.getCurrentYVel(), 0.11760000228882461D) == 0) {
+                    playerObject.setLadderCount(playerObject.getLadderCount()+1);
+                    return;
+                }
+        }
+
+
+        if(block.getType().equals(Material.LADDER) || block.getType().equals(Material.VINE)) {
+            return;
+        }
+
+        Location playerLoc = player.getLocation();
+        List<Location> nearby = new ArrayList<>();
+        nearby.add(playerLoc.clone().add(.3D, 0, 0));
+        nearby.add(playerLoc.clone().add(-.3D, 0, 0));
+        nearby.add(playerLoc.clone().add(0, 0, .3D));
+        nearby.add(playerLoc.clone().add(0, 0, -.3D));
+
+        for(Location loc : nearby) {
+            if(loc.getBlock().getType().equals(Material.LADDER) || loc.getBlock().getType().equals(Material.VINE)) {
+                if(Double.compare(playerObject.getCurrentYVel(), 0.11760000228882461D) == 0) {
+                    playerObject.setLadderCount(playerObject.getLadderCount()+1);
+                    return;
+                }
+
+            }
+        }
+    }
+
+    private void addFlyingCount(PlayerObject playerObject) {
         double currentYVel = Math.round(playerObject.getCurrentYVel() * 100.0) / 100.0;
         double prevYVel = Math.round(playerObject.getPrevYVel() * 100.0) / 100.0;
         if (currentYVel > 0 && currentYVel == prevYVel) {
             playerObject.setYVelCount(playerObject.getYVelCount()+1);
         }
-        if (playerObject.getYVelCount() > 2 && !playerObject.isFlyRecording()) {
-            playerObject.setYVelCount(0);
-            if (!validateFly(player)) return;
-            for(Player all : Bukkit.getOnlinePlayers()) {
-                if (all.hasPermission("replay") || all.isOp()) {
-                    all.sendMessage("§6" + player.getDisplayName() + " §cis flagged for flying at §6("
-                            + Math.round(player.getLocation().getX()) + ", "
-                            + Math.round(player.getLocation().getY()) + ", "
-                            + Math.round(player.getLocation().getZ()) + ") §c in §6 " + player.getLocation().getWorld().getName()
-                    );
-                }
-            }
-            startRecordingTimer(playerObject);
-        }
     }
+
 
     public void startRecordingTimer(PlayerObject playerObject) {
         playerObject.setFlyRecording(true);

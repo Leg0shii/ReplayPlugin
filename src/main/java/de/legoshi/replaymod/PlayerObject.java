@@ -17,14 +17,20 @@ public class PlayerObject {
     @Setter private boolean flyRecording;
     @Setter private double currentYVel;
     @Setter private double prevYVel;
+    @Setter private double prevY;
+    @Setter private double currentY;
     @Setter private int yVelCount;
+    @Setter private int ladderCount;
 
     public PlayerObject(Player player) {
         this.player = player;
         this.currentYVel = 0;
         this.prevYVel = 0;
+        this.prevY = 0;
+        this.currentY = 0;
         this.yVelCount = 0;
         this.flyRecording = false;
+        this.ladderCount = 0;
     }
 
     public void addPlayerMoveTick(PlayerMoveTick playerMoveTick) {
@@ -39,6 +45,11 @@ public class PlayerObject {
     public void updatePlayerVel(double yVel) {
         prevYVel = currentYVel;
         currentYVel = yVel;
+    }
+
+    public void updatePlayerY(double y) {
+        prevY = currentY;
+        currentY = y;
     }
 
 }

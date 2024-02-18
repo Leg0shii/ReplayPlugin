@@ -38,6 +38,7 @@ public class MovementListener implements Listener {
         playerManager.playerHashMap.get(player).addPlayerMoveTick(playerMoveTick);
 
         playerObject.updatePlayerVel(event.getTo().getY() - event.getFrom().getY());
+        playerObject.updatePlayerY(event.getTo().getY());
         cheatDetection.checkPlayerMovement(player);
     }
 

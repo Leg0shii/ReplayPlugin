@@ -1,5 +1,6 @@
 package de.legoshi.replaymod;
 
+import de.legoshi.replaymod.command.EndReplayCommand;
 import de.legoshi.replaymod.command.ReplayCommand;
 import de.legoshi.replaymod.command.ReplayGUICommand;
 import de.legoshi.replaymod.command.SaveReplayCommand;
@@ -74,6 +75,7 @@ public final class Main extends JavaPlugin {
         getCommand("rp").setExecutor(new ReplayCommand(replay));
         getCommand("rpgui").setExecutor(new ReplayGUICommand(mySQL));
         getCommand("rpsave").setExecutor(new SaveReplayCommand(dbManager, playerManager));
+        getCommand("rpend").setExecutor(new EndReplayCommand());
     }
 
     private void loadConfig() {

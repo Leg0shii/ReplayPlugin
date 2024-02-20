@@ -12,7 +12,7 @@ public class ReplayGUI {
     private String[] guiSetup = {
             "         ",
             "  a b c  ",
-            "    d    ",
+            "    d e  ",
     };
 
     public void guiOpen(Player player) {
@@ -46,7 +46,13 @@ public class ReplayGUI {
             return true;
         }, "&c&lFly Replays");
 
-        gui.addElements(newRP, oldRP, saveRP, flyRP);
+        StaticGuiElement ladderRP = new StaticGuiElement('e', new ItemStack(Material.GLOWSTONE_DUST), click -> {
+            ReplayGUIPlayer replayGUIPlayer = new ReplayGUIPlayer(Main.getInstance().mySQL);
+            replayGUIPlayer.guiOpen(player, "", true, false, false, "3",1);
+            return true;
+        }, "&6&lLadder Replays");
+
+        gui.addElements(newRP, oldRP, saveRP, flyRP, ladderRP);
 
         player.closeInventory();
         gui.show(player);

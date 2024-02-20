@@ -6,5 +6,6 @@ commands:
   rp:
   rpgui:
   rpsave:
+  rpend:
 
 depend: [ProtocolLib]

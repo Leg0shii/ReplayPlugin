@@ -2,6 +2,7 @@ package de.legoshi.replaymod.replay;
 
 import de.legoshi.replaymod.Main;
 import de.legoshi.replaymod.database.AsyncMySQL;
+import de.legoshi.replaymod.inventory.ReplayGUIPlayer;
 import de.legoshi.replaymod.utils.ChatHelper;
 import de.legoshi.replaymod.utils.PlayerMoveTick;
 import de.legoshi.replaymod.utils.TitleManager;
@@ -14,13 +15,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.UUID;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class Replay {
 
     private final AsyncMySQL mySQL;
+    public static final Set<String> endRP = new HashSet<>();
 
     public void playReplay(Player player, int clipID) {
         ResultSet resultSet = mySQL.query("SELECT * FROM playerclip WHERE clipid = '" + clipID + "';");
@@ -29,6 +30,7 @@ public class Replay {
         ArrayList<PlayerMoveTick> playerMoveTickArrayList = new ArrayList<>();
         String worldName;
         String playerName;
+        String playerJoin;
 
         final int[] startSize = {0};
         int endSize;
@@ -47,8 +49,9 @@ public class Replay {
                     playerMoveTickArrayList.add(playerMoveTick);
                 }
                 endSize = playerMoveTickArrayList.size();
+                playerJoin = resultSet.getString("playerjoin");
 
-                if (!resultSet.getString("playerjoin").equals("2")) {
+                if (!playerJoin.equals("2")) {
                     ResultSet resultSetLeaveClip = mySQL.query(
                             "SELECT * " +
                                     "FROM playerclip " +
@@ -90,15 +93,31 @@ public class Replay {
             @Override
             public void run() {
                 TitleManager.sendActionBar(player, "§6 Time: §7(§f" + (int) Math.floor(startSize[0]++ / 20) + "s§7/§f" + (int) Math.floor(endSize / 20) + "s§7)");
-                if (playerMoveTickArrayList.size() == 0) {
+                if (playerMoveTickArrayList.isEmpty()) {
                     fakePlayer[0].destroy(player);
+                    switch (playerJoin) {
+                        case "0":
+                        case "1":
+                            new ReplayGUIPlayer(Main.getInstance().mySQL).guiOpen(player, "", false, false, false, "1",1);
+                            break;
+                        case "2":
+                            new ReplayGUIPlayer(Main.getInstance().mySQL).guiOpen(player, "", true, false, false, "2",1);
+                            break;
+                        case "3":
+                            new ReplayGUIPlayer(Main.getInstance().mySQL).guiOpen(player, "", true, false, false, "3",1);
+                            break;
+                    }
                     cancel();
                 } else {
-                    PlayerMoveTick playerMoveTick = playerMoveTickArrayList.get(playerMoveTickArrayList.size() - 1);
-                    handlePlayer(player, fakePlayer[0], playerMoveTick);
-                    fakePlayer[0] = handleFakePlayerWorldChange(player, fakePlayer[0], playerMoveTick);
-                    fakePlayer[0].move(player, playerMoveTick);
-                    playerMoveTickArrayList.remove(playerMoveTickArrayList.size() - 1);
+                    if(endRP.contains(player.getUniqueId().toString())) {
+                        playerMoveTickArrayList.clear();
+                    } else {
+                        PlayerMoveTick playerMoveTick = playerMoveTickArrayList.get(playerMoveTickArrayList.size() - 1);
+                        handlePlayer(player, fakePlayer[0], playerMoveTick);
+                        fakePlayer[0] = handleFakePlayerWorldChange(player, fakePlayer[0], playerMoveTick);
+                        fakePlayer[0].move(player, playerMoveTick);
+                        playerMoveTickArrayList.remove(playerMoveTickArrayList.size() - 1);
+                    }
                 }
             }
         }.runTaskTimer(Main.getInstance(), 40L, 1);

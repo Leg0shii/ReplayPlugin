@@ -29,7 +29,7 @@ public class ReplayGUIPlayer {
     private String[] guiSetup = {
             "ggggggggk",
             "ggggggggh",
-            "ggggggggh",
+            "ggggggggb",
             "ggggggggh",
             "ggggggggf"
     };
@@ -45,6 +45,12 @@ public class ReplayGUIPlayer {
                     click -> true, " "
                 )
         );
+
+        gui.addElements(new StaticGuiElement('b', new ItemStack(Material.REDSTONE), click -> {
+            ReplayGUI replayGUI = new ReplayGUI();
+            replayGUI.guiOpen(player);
+            return true;
+        }));
 
         player.closeInventory();
 

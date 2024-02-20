@@ -33,20 +33,21 @@ public class CheatDetection {
         checkLadderExploit(player, playerObject);
 
         if (playerObject.getYVelCount() > 2 && !playerObject.isFlyRecording()) {
+            playerObject.setLadderCount(0);
             playerObject.setYVelCount(0);
             if (!validateFly(player)) return;
-            recordExploit(player, playerObject, "is flagged for flying");
+            recordExploit(player, playerObject, "is flagged for flying", 2);
         }
 
 
         if(playerObject.getLadderCount() > 2 && !playerObject.isFlyRecording()) {
             playerObject.setLadderCount(0);
             playerObject.setYVelCount(0);
-            recordExploit(player, playerObject, "abused the forge ladder hitbox exploit");
+            recordExploit(player, playerObject, "abused the forge ladder hitbox exploit", 3);
         }
     }
 
-    private void recordExploit(Player player, PlayerObject playerObject, String message) {
+    private void recordExploit(Player player, PlayerObject playerObject, String message, int type) {
         for(Player all : Bukkit.getOnlinePlayers()) {
             if (all.hasPermission("replay") || all.isOp()) {
                 all.sendMessage("§6" + player.getDisplayName() + " §c" + message + " at §6("
@@ -56,7 +57,7 @@ public class CheatDetection {
                 );
             }
         }
-        startRecordingTimer(playerObject);
+        startRecordingTimer(playerObject, type);
     }
 
     private void checkLadderExploit(Player player, PlayerObject playerObject) {
@@ -79,26 +80,27 @@ public class CheatDetection {
         }
 
 
-        if(block.getType().equals(Material.LADDER) || block.getType().equals(Material.VINE)) {
-            return;
-        }
+//        if(block.getType().equals(Material.LADDER) || block.getType().equals(Material.VINE)) {
+//            return;
+//        }
 
-        Location playerLoc = player.getLocation();
-        List<Location> nearby = new ArrayList<>();
-        nearby.add(playerLoc.clone().add(.3D, 0, 0));
-        nearby.add(playerLoc.clone().add(-.3D, 0, 0));
-        nearby.add(playerLoc.clone().add(0, 0, .3D));
-        nearby.add(playerLoc.clone().add(0, 0, -.3D));
-
-        for(Location loc : nearby) {
-            if(loc.getBlock().getType().equals(Material.LADDER) || loc.getBlock().getType().equals(Material.VINE)) {
-                if(Double.compare(playerObject.getCurrentYVel(), 0.11760000228882461D) == 0) {
-                    playerObject.setLadderCount(playerObject.getLadderCount()+1);
-                    return;
-                }
-
-            }
-        }
+//        Location playerLoc = player.getLocation();
+//        List<Location> nearby = new ArrayList<>();
+//        nearby.add(playerLoc.clone().add(.3D, 0, 0));
+//        nearby.add(playerLoc.clone().add(-.3D, 0, 0));
+//        nearby.add(playerLoc.clone().add(0, 0, .3D));
+//        nearby.add(playerLoc.clone().add(0, 0, -.3D));
+//
+//        for(Location loc : nearby) {
+//            if(loc.getBlock().getType().equals(Material.LADDER) || loc.getBlock().getType().equals(Material.VINE)) {
+//                if(Double.compare(playerObject.getCurrentYVel(), 0.11760000228882461D) == 0) {
+//                    player.sendMessage("X/Z exploit test");
+//                    playerObject.setLadderCount(playerObject.getLadderCount()+1);
+//                    return;
+//                }
+//
+//            }
+//        }
     }
 
     private void addFlyingCount(PlayerObject playerObject) {
@@ -110,10 +112,10 @@ public class CheatDetection {
     }
 
 
-    public void startRecordingTimer(PlayerObject playerObject) {
+    public void startRecordingTimer(PlayerObject playerObject, int type) {
         playerObject.setFlyRecording(true);
         Bukkit.getScheduler().runTaskLaterAsynchronously(Main.getInstance(), () -> {
-            dbManager.saveCurrentClip(playerObject, "2;true");
+            dbManager.saveCurrentClip(playerObject, type +";true");
             playerObject.setFlyRecording(false);
         }, 20L*Main.getInstance().joinRecTime-3);
     }
